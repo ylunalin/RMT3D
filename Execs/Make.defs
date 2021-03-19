@@ -1,0 +1,6 @@
+# This is a local defintion file for Makefile
+# Use all caps
+DEBUG   = FALSE
+VAR_DEN = FALSE
+TANG    = FALSE
+MG3D_DIR =
