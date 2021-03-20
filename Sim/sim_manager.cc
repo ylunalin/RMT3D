@@ -210,7 +210,6 @@ void sim_stest::velocity(double x,double y,double z,
 }
 
 void sim_objects::solid_acceleration(const int obj_id, const double (&rval)[3], double x, double y, double z, double t,	double &fx,double &fy,double &fz){
-        //double k_rep_default = wall_acc_default ;
         double krepx, krepy, krepz;
         krepx = wall_acc_mult*avg_velx[obj_id]*avg_velx[obj_id];
         krepy = wall_acc_mult*avg_vely[obj_id]*avg_vely[obj_id];
@@ -291,8 +290,7 @@ void sim_objects::solid_acceleration(const int obj_id, const double (&rval)[3], 
         fy-=K*ldy;
         fz-=K*ldz;
 
-        // Add gravitational force (buoyancy force)
-        //fz += gravity*heaviside(phiv) * (sm_array[obj_id].rho - fm.rho) / sm_array[obj_id].rho;
+        // Add gravitational acceleration
         fz += gravity*heaviside(phiv);
 }
 

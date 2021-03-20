@@ -586,6 +586,7 @@ class red_bc: public basic_sphere {
 	virtual double phi(const double (&xi)[3]);
 	virtual void print_self(){
 		printf( "# Red blood cell:\n"
+                "VOLUME NOT CORRECTLY COMPUTED!\n"
                 "#	[Center (%f %f %f), radius %f]\n"
 				"#	[Ellipsoid coeff: %f %f %f]\n",
 				c[0], c[1], c[2], R, ecc[0], ecc[1], ecc[2]);
@@ -610,6 +611,7 @@ class tryp: public object {
     virtual void passive_acc_deformation(const double  (&rval)[3], const double eps, double x, double y, double z, double t, double &dx, double &dy, double &dz, double & dtoe1, double & dtoe2);
 	virtual void print_self(){
 		printf(	"# Tryp:\n"
+                "VOLUME NOT CORRECTLY COMPUTED!\n"
                 "#	[Posterior center (%f %f %f)]\n"
                 "#	[Anterior center (%f %f %f)]\n"
 				"#	[Length scale %f]\n"

@@ -139,11 +139,8 @@ class sim_manager {
     double K_stiff;
 	/** the weight for 5x5x5 cube in extrapolation */
 	double weight_fac;
-    /** maximum velocity in the system.*/
+    /** Maximum velocity in the simulation, used in CFL calculation */
     double vmax;
-    /** Wall repulsion acceleration. */
-    double wall_acc_default;
-    double wall_acc_mult;
 
 
 	/** pointers to immersed objects */
@@ -175,7 +172,7 @@ class sim_manager {
 	dx(spars->dx), dy(spars->dy), dz(spars->dz),
 	dxsp(1./dx), dysp(1./dy), dzsp(1./dz),
 	lx(spars->lx), ly(spars->ly), lz(spars->lz),
-    weight_fac(spars->weight_fac), vmax(1),  wall_acc_default(1), wall_acc_mult(1),
+    weight_fac(spars->weight_fac), vmax(1),
     objs(n_obj==0?NULL:new object*[n_obj]),
     avg_velx(n_obj==0?NULL:new double[n_obj]),
     avg_vely(n_obj==0?NULL:new double[n_obj]),
@@ -194,11 +191,9 @@ class sim_manager {
         printf("# Interface properties:\n");
         printf("#    Transition zone width %6.2g grid spacings\n"
                "#    i.e. %.6e\n"
-               "#    maximum number of layers %d\n#\n",
-                wt_n, eps, nlayers);
-        printf("# Extrapolation weight factor %6.4f\n"
-               "# Maximum velocity %g L/T\n",
-            weight_fac,vmax);
+               "#    maximum number of layers %d\n#\n"
+               "#    Extrapolation weight factor %6.4f\n",
+                wt_n, eps, nlayers, weight_fac);
 
     }
 
@@ -373,8 +368,6 @@ class sim_objects: public sim_manager {
             walls[i] = spars->walls[i];
             wall_pos[i] = spars->wall_pos[i];
         }
-        // NOTE this constant 20 is an arbitrary one
-        wall_acc_default = 20*winv;
         set_wall_acc();
     };
 
@@ -385,20 +378,18 @@ class sim_objects: public sim_manager {
                "#    maximum number of layers %d\n#\n",
                 wt_n, eps, nlayers);
         printf("# Extrapolation weight factor %6.4f\n"
-               "# Wall acceleration factor %6.4f (compared against %g)\n"
                "# Wall acceleration multiplier %6.4f\n"
-               "# Minimum acceleration %6.4f\n"
-               "# Maximum velocity %g L/T\n"
+               "# Minimum wall acceleration %6.4f\n"
                "# Stiffness constant for anchoring %g T^{-2}\n"
                "# Wall in x [%d %d] position [%2.1f, %2.1f]\n"
                "# Wall in y [%d %d] position [%2.1f, %2.1f]\n"
                "# Wall in z [%d %d] position [%2.1f, %2.1f]\n"
                "# Wall activation distance %6.4f (dh=%6.4f)\n"
                "# Gravitational acceleration constant %6.4f (L/T^2)\n",
-            weight_fac, wall_acc_default, 20*winv,
+            weight_fac,
             wall_acc_mult,
             min_wall_acc,
-            vmax, K_stiff,
+            K_stiff,
             walls[0], walls[1], wall_pos[0], wall_pos[1],
             walls[2], walls[3], wall_pos[2], wall_pos[3],
             walls[4], walls[5], wall_pos[4], wall_pos[5],
@@ -412,38 +403,44 @@ class sim_objects: public sim_manager {
         fz += gravity;
     }
 	virtual void solid_acceleration(const int obj_id, const double (&rval)[3], double x, double y, double z, double t,	double &fx,double &fy,double &fz);
+
     private:
+    /** Wall repulsion acceleration. */
+    double wall_acc_mult;
     double min_wall_acc;
     void set_wall_acc(){
+        min_wall_acc = 20*winv;
         // We compute the maximum settling speed (squared)
         // using the drag equation, assume drag coefficient is order 1
         // We are getting max( r^3/ h^3 * v^2/2h)
         double mvsq=-1;
-        min_wall_acc = 20*winv;
+        // We also compute the factor of Vol/L^2
+        // This is due to the heuristic that accelerations experienced in a small region near the wall
+        // need to stop the entire object (cancel its momentum in a time step)
         double mvol =-1;
         double rho_f = fm.rho;
 
         for (int i = 0; i < n_obj; i++) {
             double rho_s = sm_array[i].rho;
             double vsq = 0.5 * fabs((rho_s - rho_f) * gravity) / rho_f;
-            vsq *= objs[i]->volume/objs[i]->primary_dim/objs[i]->primary_dim;
+            double mvol_fact = objs[i]->volume/objs[i]->primary_dim/objs[i]->primary_dim;
+
+            vsq *= mvol_fact;
             if(vsq>mvsq) mvsq= vsq;
+            if(mvol_fact > mvol) mvol = mvol_fact;
 
-            if(objs[i]->volume > mvol) mvol = objs[i]->volume/objs[i]->primary_dim/objs[i]->primary_dim;
-
-            // reuse vsq varialbe
             // calculate the minumum acceleration needed to support an object
-            vsq = fabs((rho_s - rho_f) * gravity * objs[i]->volume / rho_s/ objs[i]->primary_dim / objs[i]->primary_dim *winv);
-            if(vsq>min_wall_acc) min_wall_acc = vsq;
+            // when it gets to the bottom
+            double support_acc = fabs((rho_s - rho_f) * gravity * winv * mvol_fact / rho_s);
+            if(support_acc > min_wall_acc) min_wall_acc = support_acc;
         }
         // The last multiplicative constant is to add some insurance
         // The accelerations in the wall contact region needs to stop the momentum of the entire object
-        wall_acc_default = 0.5*mvsq*pow(winv, 4);
         wall_acc_mult = 0.5*mvol*pow(winv, 2);
 
         // settling velocity should also be taken into accout in cfl condition
         mvsq = sqrt(mvsq);
-        if(mvsq>vmax) vmax = mvsq;
+        vmax = mvsq;
     }
 };
 
