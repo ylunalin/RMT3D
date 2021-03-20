@@ -1901,7 +1901,7 @@ void fluid_3d::solid_stress(int eid, double (&solid_s)[3], double &sfrac){
 
 		matrix def_grad = grad_xi.inverse();
 
-		double astress[3];
+		sym_matrix astress(0);
 		bool add_astress=false;
 		// if active stress, calculate on this face
 		if (mgmt->objs[obj_id-1]->act_stress_method) {
@@ -1937,6 +1937,21 @@ void fluid_3d::solid_stress(int eid, double (&solid_s)[3], double &sfrac){
         rCGT = def_grad.ata();
         rf.elastic_energy[F] = 0.5*G*(rCGT.trace() - 3 -2*log(rf.detF[F]));
 
+		// store active stress work rate
+		rf.act_power[F] = 0;
+		if (add_astress) {
+
+			// grab velocity gradient tensor
+			matrix gv;
+			velocity_grad(F,eid,gv);
+
+			// double-dot product
+			for(int r=0;r<3;r++) for(int c=0;c<3;c++)
+				rf.act_power[F] -= astress(r,c) * gv(r,c);
+			
+		}
+
+
 		// compute the hydrostatic part of the stress
 		double sigma_avg = sigma.trace()/3.0;
 
@@ -1955,7 +1970,7 @@ void fluid_3d::solid_stress(int eid, double (&solid_s)[3], double &sfrac){
 				    -fp[-strides[nn]].vel[F] - fp[-strides[nn]-strd].vel[F])))
 			);
 
-			if (add_astress) solid_s[nn] += astress[nn];
+			if (add_astress) solid_s[nn] += astress(F,nn);
 		}
 
 #if defined(DEBUG)
@@ -2012,6 +2027,31 @@ void fluid_3d::fluid_stress(int eid, double (&fluid_s)[3]){
 		du[ad1] += tu1;
 		du[ad2] += tu2;
 		for(int nn=0;nn<3;nn++) fluid_s[nn] = du[nn] * visc;
+	}
+}
+
+/** routine to compute entire velocity gradient;
+ *  on one lower face */
+void fluid_3d::velocity_grad(lower_faces F,int eid, matrix &grad_v){
+	if(F>2) p_fatal_error("fluid_stress: Unknown lower_faces, try again.\n", 1);
+	const int strides[3] ={1, sm4, smn4};
+	const double facs[3] ={dxsp, dysp, dzsp};
+	int strd = strides[F];
+	int ad1 = (F+1)%3, ad2= (F+2)%3, as1 = strides[ad1], as2 = strides[ad2];
+
+	field *fp = u0+eid;
+
+	// column is vel. component
+	for(int c=0;c<3;c++) {
+
+        // Cannot be use unless bounds are checked!
+		grad_v(ad1,c) = 0.25*facs[ad1]*(fp[as1].vel[c] + fp[as1-strd].vel[c] - fp[-as1].vel[c] - fp[-as1-strd].vel[c]);
+		grad_v(ad2,c) = 0.25*facs[ad2]*(fp[as2].vel[c] + fp[as2-strd].vel[c] - fp[-as2].vel[c] - fp[-as2-strd].vel[c]);
+		grad_v(F,c)  =  facs[F]*(fp->vel[c] - fp[-strd].vel[c]);
+//		du[F] *=2;
+//		du[ad1] += tu1;
+//		du[ad2] += tu2;
+//		for(int nn=0;nn<3;nn++) fluid_s[nn] = du[nn] * visc;
 	}
 }
 

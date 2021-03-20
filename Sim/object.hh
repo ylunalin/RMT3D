@@ -59,7 +59,7 @@ class object {
     };
 
 	virtual void active_stress(double tt,double (&x)[3],int row,
-			const matrix &F,double (&sr)[3]) {
+			const matrix &F,sym_matrix &as) {
 
 		char mesg[] = "this object doesn't have an active stress method\n";
 		p_fatal_error(mesg,-1);
@@ -265,7 +265,7 @@ class active_rod_as : public rod {
 	}
 
 	void active_stress(double tt,double (&X)[3],int row,
-			const matrix &F,double (&sr)[3]) {
+			const matrix &F,sym_matrix &as) {
 
 		// inner cylinder radius
 		const double Ri=     R;
@@ -358,8 +358,11 @@ class active_rod_as : public rod {
 		
 		// "basis" stress tensor is o(x)o (outer product of orientation with itself)
 		// actual is that multipled by b * zz
-		for(int c=0;c<3;c++)
-			sr[c] = s*(xd_hat[row]*xd_hat[c] - (row==c?1.:0.)/3.);
+//		for(int c=0;c<3;c++)
+//			sr[c] = s*(xd_hat[row]*xd_hat[c] - (row==c?1.:0.)/3.);
+		for(int r=0;r<3;r++)
+			for(int c=r;c<3;c++)
+				as(r,c) = s*(xd_hat[r]*xd_hat[c] - (r==c?1.:0.)/3);
 	}
 };
 

@@ -803,12 +803,13 @@ void fluid_3d::total_momentum(double (&mv_ext)[3]){
 /** Compute total non-dissipative energy, assuming constant density everywhere.
     If we compute potential energy, assume equi-potential planes is parallel to xy-plane.
  */
-double fluid_3d::total_energy(double &pot_energy, double &kin_energy, double &elas_energy){
+double fluid_3d::total_energy(double &pot_energy, double &kin_energy, double &elas_energy,
+		double &power_rate){
     // TODO add dissipation, taking into account
     // fluid viscous stress
     // solid artificial stress in the body and at the interface (a multiplier is applied)
-    double gpot = 0, gkin = 0, gelas =0;
-    double pot = 0, kin = 0, elas =0;
+    double gpot = 0, gkin = 0, gelas =0, gpower=0;
+    double pot = 0, kin = 0, elas =0, power=0;
     double tot = 0, gtot = 0;
     const int strides[3] = {1, sm4, smn4};
     for (int kk =0; kk < so; kk++) {
@@ -829,13 +830,18 @@ double fluid_3d::total_energy(double &pot_energy, double &kin_energy, double &el
                 }
 
                 if(rf.oid() > 0){
-                    double tmp_elas = 0;
+                    double tmp_elas = 0,tmp_pow = 0;
                     for(int s=0;s<3;s++) {
+
+
                         // get the energies own by this cell, 3 lower faces
+						tmp_pow  += rf.act_power[s];
                         tmp_elas += rf.elastic_energy[s];
                         // now get the energies own by the immediate nearby cells
                         // the 3 upper faces
                         ref_map *rp = get_refmap(ind+strides[s], rf.oid());
+
+						tmp_pow  += rp->act_power[s];
                         tmp_elas += rp->elastic_energy[s];
                         /*
                         if(rf.elastic_energy[s] < 0 || rp->elastic_energy[s] < 0) {
@@ -844,8 +850,10 @@ double fluid_3d::total_energy(double &pot_energy, double &kin_energy, double &el
                         */
                     }
                     //  average over the faces
+					tmp_pow  /= 6.;
                     tmp_elas /= 6.;
                     elas += tmp_elas;
+					power += tmp_pow;
                 }
             }
         }
@@ -855,16 +863,19 @@ double fluid_3d::total_energy(double &pot_energy, double &kin_energy, double &el
     elas*=dv;
     kin*=dv;
     pot*=dv;
+	power*=dv;
     tot = elas + kin + pot;
 
     MPI_Allreduce(&elas, &gelas, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&kin, &gkin, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&pot, &gpot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&tot, &gtot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&power, &gpower, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     elas_energy = gelas;
     kin_energy = gkin;
     pot_energy = gpot;
+	power_rate = gpower;
     return gtot;
 }
 

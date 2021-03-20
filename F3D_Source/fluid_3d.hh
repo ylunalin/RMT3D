@@ -324,6 +324,8 @@ class fluid_3d {
 	void solid_stress(int eid, double (&solid_s)[3], double & sfrac);
 	template<lower_faces F>
 	void fluid_stress(int eid, double (&fluid_s)[3]);
+	void velocity_grad(lower_faces F,int eid,matrix &grad_v);
+
 	void compute_stress(bool verbose);
 
 	// godunov scheme functions
@@ -431,7 +433,7 @@ class fluid_3d {
     double vel_mod(int norm);
     void write_all_Js(char* fn);
     void total_momentum(double (&mv_ext)[3]);
-    double total_energy(double &pot_energy, double &kin_energy, double &elas_energy);
+    double total_energy(double &pot_energy, double &kin_energy, double &elas_energy,double &power);
     double total_dev_in_detF(double & max_dev);
     double avg_detF();
     void compute_centroid(double &centx, double &centy, double &centz, double &vol);

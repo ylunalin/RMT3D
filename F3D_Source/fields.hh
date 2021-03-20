@@ -308,6 +308,7 @@ struct ref_map {
     double detF[3];
     // Needed for extrapolation
     double grad_phi[3][3];
+	double act_power[3];
 
 #if defined(DEBUG)
     // Debug fields

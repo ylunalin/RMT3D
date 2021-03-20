@@ -322,16 +322,9 @@ int stepper::step(p_class &pr) {
     }
 
 
-    //double max_change_in_u = pr.check_steady_solution();
-    //if(max_change_in_u < 1e-7) err = STEADY_SOLN_EXIT;
-
 	clock();
 	if (pr.rank == 0) time_ints();
 	if (show_bar) show_progress(pr,false);
-	else {
-		//if(pr.rank==0) printf("stepper:: step %d/%d\n",
-		//	steps*(curr_frame-1) + curr_step,total);
-	}
 
     return err;
 }
@@ -373,9 +366,6 @@ void stepper::run(p_class &pr) {
 		write_files(pr, curr_tot_step, curr_frame);
         collect_macro_data(pr);
         if(errcode == STEADY_SOLN_EXIT) break;
-
-        //double max_change_in_u = pr.check_steady_solution();
-        //if(pr.rank==0) printf("\n\n\n# Stepper: F3D has max|u - u_prev| = %g\n\n\n", max_change_in_u);
 	}
 	// drop a newline at the end
     clock();
@@ -408,12 +398,14 @@ void stepper::collect_macro_data(p_class &pr){
                             "%10s %6s %10s %6s %10s "
                             "%10s %10s %10s %10s "
                             "%10s %10s %10s "
-                            "%10s %10s\n",
+							"%10s "
+                            "%10s %10s %16s %16s %10s\n",
                             "#Time", "frame", "steps",
                             "div_u_max", "rank", "div_u_min", "rank", "divu_L2",
                             "tot_mmt_x","tot_mmt_y","tot_mmt_z","tot_energy",
                             "kinetic", "elastic", "potential",
-                            "max_dev_detF", "dev_detF_L2");
+							"power",
+                            "max_dev_detF", "dev_detF_L2", "sing. obj. cent.", "volume", "change in u");
                 fclose(fh);
             }
         }
@@ -426,8 +418,8 @@ void stepper::collect_macro_data(p_class &pr){
         pr.total_momentum(mmt);
 
         // Total energy
-        double pot, kin, elas;
-        double energy = pr.total_energy(pot, kin, elas);
+        double pot, kin, elas, pow;
+        double energy = pr.total_energy(pot, kin, elas,pow);
 
         // Deviation of det(F) from 1
         double max_dev;
@@ -439,8 +431,8 @@ void stepper::collect_macro_data(p_class &pr){
             fprintf(fh, "%.*e %06d %06d %.*e %06d %.*e %06d ", digs, pr.time, curr_frame, curr_tot_step, digs, gmx_ext.value, gmx_ext.rank, digs, gmn_ext.value, gmn_ext.rank);
             fprintf(fh, "%.*e ", digs, divu_l2);
             fprintf(fh, "%.*e %.*e %.*e %.*e ", digs, mmt[0], digs, mmt[1], digs, mmt[2], digs, energy);
-            fprintf(fh, "%.*e %.*e %.*e ", digs, kin, digs, elas, digs, pot);
-            fprintf(fh, "%.*e %.*e\n", digs, max_dev, digs, tot_dev_in_detF);
+            fprintf(fh, "%.*e %.*e %.*e %.*e ", digs, kin, digs, elas, digs, pot,digs,pow);
+            fprintf(fh, "%.*e %.*e ", digs, max_dev, digs, tot_dev_in_detF);
             fclose(fh);
         }
 
@@ -504,14 +496,14 @@ void stepper::run_diagnostics(p_class &pr){
                 fh = p_safe_fopen(fname_buf, "w");
                 fprintf(fh, "%10s %6s %6s %10s %6s %10s %6s "
                             "%10s %10s %10s %10s %10s %10s "
-                            "%10s %10s %10s "
+                            "%10s %10s %10s %10s "
                             "%10s %6s %10s %6s "
                             "%10s %6s %10s %6s "
                             "%10s %6s %10s %6s "
                             "%10s %10s %10s %10s %6s %6s %16s %16s\n",
                             "#Time", "frame", "steps", "div_u_max", "rank", "div_u_min", "rank",
                             "u_2norm","u_inf_norm","tot_mmt_x","tot_mmt_y","tot_mmt_z","tot_energy",
-                            "kinetic", "elastic", "potential",
+                            "kinetic", "elastic", "potential","power",
                             "mx_norm_str", "oid", "mx_shear_str", "oid",
                             "mx_coll_norm", "oid", "mx_coll_shear", "oid",
                             "mx_coll_traction", "oid", "mx_grad_phi_diff", "oid",
@@ -538,8 +530,8 @@ void stepper::run_diagnostics(p_class &pr){
         int sign = 0;
         double_int gmx_gaussian_curvature = pr.max_Gaussian_curvature(sign);
 
-        double pot, kin, elas;
-        double energy = pr.total_energy(pot, kin, elas);
+        double pot, kin, elas,pow;
+        double energy = pr.total_energy(pot, kin, elas, pow);
         double max_dev;
         double tot_dev_in_detF = pr.total_dev_in_detF(max_dev);
         double avg_detF = pr.avg_detF();
@@ -550,7 +542,7 @@ void stepper::run_diagnostics(p_class &pr){
             fh = p_safe_fopen(fname_buf, "a");
             fprintf(fh, "%+6.4g %06d %06d %+6.4e %06d %+6.4e %06d ", pr.time, curr_frame, curr_tot_step, gmx_ext.value, gmx_ext.rank, gmn_ext.value, gmn_ext.rank);
             fprintf(fh, "%+10.4e %+10.4e %+10.4e %+10.4e %+10.4e %+10.4e ", vel_l2, vel_infty, mmt[0], mmt[1], mmt[2], energy);
-            fprintf(fh, "%+10.4e %+10.4e %+10.4e ", kin, elas, pot);
+            fprintf(fh, "%+10.4e %+10.4e %+10.4e %+10.4e ", kin, elas, pot,pow);
             fprintf(fh, "%+10.4g %06d %+10.4e %06d ", gmx_solid_norm.value, gmx_solid_norm.rank, gmx_solid_shear.value, gmx_solid_shear.rank);
             fprintf(fh, "%+10.4g %06d %+10.4e %06d ", gmx_coll_norm.value, gmx_coll_norm.rank, gmx_coll_shear.value, gmx_coll_shear.rank);
             fprintf(fh, "%+10.4g %06d %+10.4e %06d %+10.4e %+10.4e %+10.4e ", gmx_coll_tract.value, gmx_coll_tract.rank, gmx_grad_phi_diff.value, gmx_grad_phi_diff.rank, avg_detF, tot_dev_in_detF, max_dev);
