@@ -1,7 +1,8 @@
 # RMT3D
 Authors: Yuexia Luna Lin, Nicholoas J. Derr, Chris H. Rycroft
 
-The code simulates 3D incompressible fluid-structure interaction with neo-Hookean materials via the Reference Map Technique.
+This simulation tool models 3D incompressible fluid-structure interaction with neo-Hookean materials via the Reference Map Technique.
+Incompressible Navier-Stokes equations in the fluids are coupled with large deformation solid mechanics equations in the solids, and solved on a fixed Cartesian mesh.
 
 Software/library requirements:
 
