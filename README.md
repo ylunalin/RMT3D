@@ -1,8 +1,10 @@
 # RMT3D: Reference Map Technique 3D
-Authors: Yuexia Luna Lin, Nicholoas J. Derr, Chris H. Rycroft
 RMT3D simulates 3D incompressible fluid-structure interaction with solids that undergoes large deformation.
 An incompressible neo-Hookean material model is used.
 
+Authors: Yuexia Luna Lin, Nicholoas J. Derr, Chris H. Rycroft
+
+_John A. Paulson School of Engineering and Applied Sciences, Harvard University_
 ## Software/library requirements:
 
 - GNUMake
