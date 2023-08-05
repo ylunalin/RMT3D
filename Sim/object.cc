@@ -30,10 +30,16 @@ object* object::alloc(const int type_name, const double *bp, const double *ep){
 
     } else if( type_name == BEAM){
         return new beam(bp, ep, false);
+
     } else if( type_name == ACTIVE_ROD_AS){
         return new active_rod_as(bp, ep, false);
+
     } else if( type_name == BENTBEAM){
         return new bent_beam(bp, ep, false);
+
+    } else if( type_name == SHEET){
+        return new sheet(bp, ep, false);
+
     } else {
         p_fatal_error("object:: Unknown object type!\n", 1);
         return NULL;
@@ -109,6 +115,20 @@ double rod::phi(const double (&xi)[3]) {
     }
     return tmp_phi;
 
+}
+
+double sheet::phi(const double (&xi)[3]) {
+    double d[3];
+	for(int i=0;i<3;i++){
+		d[i] = fabs(xi[i]-c[i])-half_side_lenghts[i];
+	}
+    double fuzzy_xy = fuzzy_max(d[0], d[1]);
+    double fuzzy_xz = fuzzy_max(d[0], d[2]);
+    double fuzzy_yz = fuzzy_max(d[1], d[2]);
+    double max_phi = fuzzy_xy>fuzzy_xz?fuzzy_xy:fuzzy_xz;
+    max_phi = fuzzy_yz>max_phi?fuzzy_yz:max_phi;
+
+    return max_phi;
 }
 
 double cube::phi(const double (&xi)[3]) {

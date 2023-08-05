@@ -73,7 +73,8 @@ namespace OBJECT_DICT {
         TWIST_ROD=8,
         BEAM=9,
         BENTBEAM=10,
-		ACTIVE_ROD_AS=11
+		ACTIVE_ROD_AS=11,
+        SHEET=12
     };
 }
 

@@ -366,6 +366,39 @@ class active_rod_as : public rod {
 	}
 };
 
+class sheet: public object{
+	public:
+	double t, L; // thickness and side length (sqaure cross section)
+	cube(const double *basic_specs, const double *extra_specs, bool v=false) :
+		object(basic_specs), L(primary_dim),
+        t(extra_specs[0]){
+            volume = t*L*L;
+            half_side_lengths[0] = t*0.5;
+            half_side_lengths[1] = L*0.5;
+            half_side_lengths[2] = L*0.5;
+            if(v) print_self();
+    }
+	~sheet() {}
+    // level-set function
+	virtual double phi(const double (&xi)[3]);
+    // reference map values in the initial configuration
+	virtual void rm0(const double (&x)[3],double (&xi)[3]) {
+		// NOTE
+		// F and F inv maps vector, while xi, x
+		// are coordinate. Subtract off the center
+		// to get the vector
+        for(int i=0;i<3;i++) xi[i] = x[i];
+	}
+	virtual void print_self(){
+		printf("# Sheet:\n"
+               "#	[Center (%f %f %f), side length %f, thickness %f]\n"
+			   c[0], c[1], c[2], L, t);
+	}
+
+    protected:
+    double half_side_lengths [3];
+};
+
 class cube: public object{
 	public:
 	double L;
