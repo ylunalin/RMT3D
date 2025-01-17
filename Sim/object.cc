@@ -44,21 +44,21 @@ const double object::fuzzy_eps = 1./128.;
 
 double object::fuzzy_max(const double d1, const double d2){
     double diff = fabs(d1-d2);
-    if(diff > fuzzy_eps) return std::max(d1,d2);
+    if(diff > fuzzy_eps) return d1>d2?d1:d2;
     else{
         double addon = (fuzzy_eps-diff)*(fuzzy_eps-diff);
         double ld1 = d1+addon, ld2 = d2+addon;
-        return std::max(ld1,ld2);
+        return ld1>ld2?ld1:ld2;
     }
 }
 
 double object::fuzzy_min(const double d1, const double d2){
     double diff = fabs(d1-d2);
-    if(diff > fuzzy_eps) return std::min(d1,d2);
+    if(diff > fuzzy_eps) return d1<d2?d1:d2;
     else{
         double takeoff = fuzzy_eps-diff;
         double ld1 = d1-takeoff, ld2 = d2-takeoff;
-        return std::min(ld1,ld2);
+        return ld1<ld2?ld1:ld2;
     }
 }
 
@@ -103,7 +103,7 @@ double rod::phi(const double (&xi)[3]) {
     // Test which side of the rod we are on
     double tmp_phi = 0;
 	if(fabs(dot_product)>L*0.5) {
-        tmp_phi = std::min(d_low, d_hi);
+        tmp_phi = d_low<d_hi?d_low:d_hi;
     } else {
         tmp_phi = d_cyl;
     }

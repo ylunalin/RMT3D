@@ -1,6 +1,7 @@
 #ifndef TIMER
 #define TIMER
 
+#include <cstdio>
 #include <mpi.h>
 #include <vector>
 #include <cstdarg>

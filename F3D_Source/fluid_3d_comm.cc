@@ -476,7 +476,7 @@ void fluid_3d::shift_extraps(int type,int lid){
 									rm->xpred[face/2] += shift_by[face];
 								} else if (type==1){
 									for(int f=0;f<6;f++) rm->fx[f][face/2] += shift_by[face];
-								} else  p_fatal_error("fluid_3d::shift_extraps(): Undefined type.",  MG3D_INTERNAL_ERROR);
+								} else  p_fatal_error("fluid_3d::shift_extraps(): Undefined type.",  PGMG_INTERNAL_ERROR);
 							}
 						}
 					}

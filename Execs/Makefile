@@ -2,8 +2,8 @@
 include ../config.mk
 include ./Make.defs
 
-# RMT3D requires mg_3d library
-# Input mg_3d path in Make.defs, otherwise, default is ../../
+# RMT3D requires PGMG library
+# Input PGMG path in Make.defs, otherwise, default is ../../
 PGMG_DIR?=../../
 # Assemble the subdirectories that contain source files
 source_dirs += ../F3D_Source ../Extrapolation ../IO ../Sim ../Utilities
@@ -20,7 +20,7 @@ iflags = $(foreach subdir,$(source_dirs), -I./$(subdir))
 # Add a few flags for GNU Scientific Library
 iflags+=-I$(PGMG_DIR) `gsl-config --cflags`
 # Add these directory to library path
-lflags+=-L. -L$(PGMG_DIR) -lmg3d `gsl-config --libs`
+lflags+=-L. -L$(PGMG_DIR) -lpgmg `gsl-config --libs`
 # add C++-11 std to clfags
 
 ########################################
@@ -56,7 +56,7 @@ execsuffix :=$(vardensuffix)$(debugsuffix)$(tangsuffix)
 execs=ctr_stats unpack tr_unpack run_sim$(execsuffix)
 
 ########################################
-# make everything in mg_3d and then here
+# make everything in pgmg and then here
 all:
 	$(MAKE) depend
 	$(MAKE) -C $(PGMG_DIR) objects

@@ -447,7 +447,7 @@ public:
 		double resid = mg->l0_error_all();
         /*
 		if (std::isnan(resid)) p_fatal_error(
-			"NaN detected in multigrid solve",MG3D_MATH_ERROR);
+			"NaN detected in multigrid solve",PGMG_MATH_ERROR);
         */
 		return resid;
 	}

@@ -99,7 +99,7 @@ struct field {
 		if (f<3 && f>=0) return vel[f];
 		else if( f==3) return p;
 		else {
-			p_fatal_error("error, field::get\n",MG3D_SETUP_ERROR);
+			p_fatal_error("error, field::get\n",PGMG_SETUP_ERROR);
 			return std::numeric_limits<double>::quiet_NaN();
 		}
 	}
@@ -439,7 +439,7 @@ struct ref_map {
 	double get(const int f) const {
 		if (f<=2 && f>=0) return x[f];
 		else {
-			p_fatal_error("error, field::get\n",MG3D_SETUP_ERROR);
+			p_fatal_error("error, field::get\n",PGMG_SETUP_ERROR);
 			return std::numeric_limits<double>::quiet_NaN();
 		}
 	}

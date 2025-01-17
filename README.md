@@ -17,7 +17,7 @@ _John A. Paulson School of Engineering and Applied Sciences, Harvard University_
 1. Download or <code> git clone </code> RMT3D repository.
 2. Download or <code> git clone </code> PGMG repository. For convenience, put PGMG/ and RMT3D/ on the same file system level.
 3. Create a config.mk file to configure which compiler to use and basic compiler and linker flags. Sample config.mk files are provided for Mac and Linux in the make_configs/ folder.
-4. Change into Execs/ folder and open Make.defs. Modify the line <code> PGMG_DIR = </code> to point to the path to PGMG/ repo. For example, <pre> PGMG_DIR = /Users/gitcodes/PGMG/ </pre> Notice that the library name is _libmg3d_.
+4. Change into Execs/ folder and open Make.defs. Modify the line <code> PGMG_DIR = </code> to point to the path to PGMG/ repo. For example, <pre> PGMG_DIR = /Users/gitcodes/PGMG/ </pre> Notice that the library name is _libpgmg_.
 6. After these changes, typing <code> make </code> in the commandline in Execs/ directory will build an MPI-enable application, with executable run_sim.
 7. To run the application, a config file (must have file extension .cfg) for the simulation must be provided as command line argument. To run it in serially,  <pre> ./run_sim mySim.cfg </pre> To run it with N processes, <pre> mpirun -np N run_sim mySim.cfg </pre>
 8. Sample simulation config files can be found in sim_configs/ directory. Examples include

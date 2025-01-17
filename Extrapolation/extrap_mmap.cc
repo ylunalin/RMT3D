@@ -174,7 +174,7 @@ void extrap_mmap::add_mem(int ind,unsigned int c,double (&xi)[3],int type) {
 	if (type == 0 || type==1) {
 		for (int k = 0; k < 3; k++) fp->xpred[k] = fp->x[k] = xi[k];
 	} else {
-		p_fatal_error("extrap_mmap::add_mem(): Undefined type!\n", MG3D_INTERNAL_ERROR);
+		p_fatal_error("extrap_mmap::add_mem(): Undefined type!\n", PGMG_INTERNAL_ERROR);
 	}
 	fp->c = c;
 

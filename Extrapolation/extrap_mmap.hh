@@ -94,7 +94,7 @@ class extrap_mmap {
 					if(type==0) f[ind][j].pack_x(cb);
 					else if(type==1) f[ind][j].pack_xpred(cb);
 					else if(type==2) f[ind][j].pack_fxs(cb);
-					else p_fatal_error("extrap_mmap::pack_extrap(): Undefined type.",MG3D_INTERNAL_ERROR);
+					else p_fatal_error("extrap_mmap::pack_extrap(): Undefined type.",PGMG_INTERNAL_ERROR);
 				}
 			}
 			return n_here;
@@ -113,7 +113,7 @@ class extrap_mmap {
 					if(type==0) f[ind][j].pack_x(cb);
 					else if(type==1) f[ind][j].pack_xpred(cb);
 					else if(type==2) f[ind][j].pack_fxs(cb);
-					else  p_fatal_error("extrap_mmap::pack_extrap(): Undefined type.",MG3D_INTERNAL_ERROR);
+					else  p_fatal_error("extrap_mmap::pack_extrap(): Undefined type.",PGMG_INTERNAL_ERROR);
 				/*switch (type) {
 					case 0: f[ind][j].pack_x(cb); break;
 					case 1: f[ind][j].pack_xpred(cb); break;
@@ -154,7 +154,7 @@ class extrap_mmap {
 							}
 						}
 				}
-				else p_fatal_error("extrap_mmap::unpack_extrap(): Undefined type.", MG3D_INTERNAL_ERROR);
+				else p_fatal_error("extrap_mmap::unpack_extrap(): Undefined type.", PGMG_INTERNAL_ERROR);
 			}
 		}
 

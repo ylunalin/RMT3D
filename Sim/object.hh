@@ -227,7 +227,7 @@ class active_rod_as : public rod {
 		double tmp_phi = 0;
 
 		if (fabs(dot_product)>=0.5*L) {
-			tmp_phi = std::min(d_low,d_hi);
+			tmp_phi = d_low<d_hi?d_low:d_hi;
 		} else {
 			tmp_phi = d_cyl;
 		}

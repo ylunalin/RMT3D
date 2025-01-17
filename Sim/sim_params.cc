@@ -368,7 +368,8 @@ sim_params::sim_params(const char *fn):
     dx = lx/sys_size[0];
     dy = ly/sys_size[1];
     dz = lz/sys_size[2];
-    wall_dist = std::max(min_dh(), wall_dist);
+    double mdh=min_dh();
+    wall_dist = mdh>wall_dist?mdh:wall_dist;
 
     // after recovery directory is read in, we check if checkpoint files exist
     chk_dirname = NULL;

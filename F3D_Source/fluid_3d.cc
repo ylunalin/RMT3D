@@ -460,7 +460,7 @@ int fluid_3d::step_forward(int debug){
 		tr->predict();
 	}
 	if(basic_v) {
-        int success;
+        int success=0;
         if(rank==0) success = system("echo \"Clock: `date`\"");
         printf("Rank %d. Print time %d. Starting timestep %d. Current sim time %g\n", rank, success, nt, time);
     }
@@ -2210,7 +2210,7 @@ void fluid_3d::mac_solve(double cdt, bool verbose){
 	if(verbose) printf("Rank %d. MAC projection step, multigrid solve.\n",rank);
 	if(dx!=dy || dx!=dz){
         printf("%g %g %g\n", dx, dy, dz);
-		p_fatal_error("fluid_3d::mac_solve(): Spatial discretization must be homogenous.", MG3D_SETUP_ERROR);
+		p_fatal_error("fluid_3d::mac_solve(): Spatial discretization must be homogenous.", PGMG_SETUP_ERROR);
 	}
 
     watch.tic(4);
@@ -2228,7 +2228,7 @@ void fluid_3d::mac_solve(double cdt, bool verbose){
 	} else {
 		res = mac.run(mg_mac, true);
 	}
-    if(std::isnan(res)) p_fatal_error("fluid_3d::mac_solve(): NaN detected in multigrid solve",MG3D_MATH_ERROR);
+    if(std::isnan(res)) p_fatal_error("fluid_3d::mac_solve(): NaN detected in multigrid solve",PGMG_MATH_ERROR);
 
     extract_mac_soln();
     watch.toc(4);
@@ -2417,7 +2417,7 @@ void fluid_3d::impl_timestep() {
 		} else {
 			res=visc.run(mg_visc,true,comp);
 		}
-        if(std::isnan(res)) p_fatal_error("NaN detected in multigrid solve",MG3D_MATH_ERROR);
+        if(std::isnan(res)) p_fatal_error("NaN detected in multigrid solve",PGMG_MATH_ERROR);
 		for (int kk = 0; kk < so; kk++)
 			for (int jj = 0; jj < sn; jj++)
 				for (int ii = 0; ii < sm; ii++) {
@@ -2506,7 +2506,7 @@ void fluid_3d::free() {
 void fluid_3d::compute_grad_basis(){
 	if(dx!=dy || dx!=dz) {
         printf("%g %g %g\n", dx, dy, dz);
-		p_fatal_error("fluid_3d::compute_grad_basis(): Spatial discretization not homogenous!", MG3D_MATH_ERROR);
+		p_fatal_error("fluid_3d::compute_grad_basis(): Spatial discretization not homogenous!", PGMG_MATH_ERROR);
 	}
 	double fac = 3*dx/dt;
 	for (int i=0; i<8; i++){
